@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Laboratorio de Biomoléculas · Toca al Topo</title>
 <style>
@@ -703,7 +704,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
       <div class="step"><div class="n">3</div><b>Expedición Socompa</b><span>Seis juegos en la laguna para usar lo que sabes.</span></div>
       <div class="step"><div class="n">4</div><b>Llave y certificado</b><span>Gana la llave, encuentra la salida y descarga tu diploma.</span></div>
     </div>
-    <div class="teacherLink noPrint"><button id="teacherBtn" type="button">Acceso docente · registro de estudiantes</button></div>
   </div>
 </section>
 
@@ -1238,7 +1238,7 @@ $("startBtn").addEventListener("click",()=>{
   resetGameState();
   showMap();
 });
-$("teacherBtn").addEventListener("click",showTeacher);
+
 $("coverStart").addEventListener("click",()=>{
   const m=$("bgMusic");if(m&&state.music){m.volume=.5;m.play().catch(()=>{})}
   show("start");
