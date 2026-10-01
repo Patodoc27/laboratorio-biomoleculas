@@ -164,16 +164,16 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
 /* ---- Juego ---- */
 .gameShell{background:linear-gradient(165deg,rgba(24,30,66,.97),rgba(13,17,44,.98));border:1px solid rgba(255,255,255,.16);border-radius:32px;box-shadow:var(--shadow);padding:clamp(14px,1.8vw,24px);color:#eef1ff}
-.gameHeader{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.gameHeader{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px;flex-wrap:wrap}
 .playerMini{display:flex;gap:11px;align-items:center}
 .miniAvatar{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:#fff;font-size:27px;border:1.5px solid rgba(255,255,255,.3);overflow:hidden}
 .miniAvatar img{width:100%;height:100%;object-fit:cover}
 .playerMini b{display:block;font-size:14.5px}
 .playerMini span{font-size:11.5px;color:#9aa6d6}
-.topbar{display:grid;grid-template-columns:1.3fr repeat(5,.72fr);gap:10px;margin-bottom:11px}
-.hud{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);border-radius:16px;padding:10px 13px;backdrop-filter:blur(4px)}
+.topbar{display:grid;grid-template-columns:1.3fr repeat(5,.72fr);gap:9px;margin-bottom:8px}
+.hud{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);border-radius:16px;padding:8px 12px;backdrop-filter:blur(4px)}
 .hud small{display:block;text-transform:uppercase;letter-spacing:.08em;font-size:9.5px;font-weight:950;color:#9aa6d6;margin-bottom:3px}
-.hud strong{font-size:19px}
+.hud strong{font-size:16px}
 .hud .bioMiniDot{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:6px}
 .starHud{background:linear-gradient(145deg,rgba(255,198,59,.24),rgba(255,198,59,.1));border-color:rgba(255,198,59,.5)}
 .starHud strong{color:#ffd97a}
@@ -186,9 +186,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .collectChip{width:46px;height:46px;border-radius:14px;border:2px solid rgba(255,255,255,.24);background:rgba(255,255,255,.08);display:grid;place-items:center;font-weight:1000;color:#aeb8dd;transition:.16s}
 .collectChip.got{background:rgba(14,194,166,.28);border-color:var(--teal);color:#7df0dd;transform:scale(1.09)}
 .challengeBadge{font-size:12px;font-weight:900;color:#ffd97a;padding:9px 13px;border-radius:13px;background:rgba(255,198,59,.14);white-space:nowrap}
-.statusLine{min-height:32px;display:grid;place-items:center;text-align:center;font-weight:900;font-size:14.5px;margin-bottom:5px}
+.statusLine{min-height:27px;display:grid;place-items:center;text-align:center;font-weight:900;font-size:14px;margin-bottom:6px}
 .statusLine.good{color:#5cf2b8}.statusLine.bad{color:#ff8d99}.statusLine.neutral{color:#9aa6d6}
-.gameGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:13px;user-select:none;max-width:1120px;margin:0 auto}
+.gameGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;user-select:none;max-width:1000px;margin:0 auto}
 .hole{position:relative;aspect-ratio:1.32/1;border-radius:50% 50% 45% 45%;background:radial-gradient(ellipse at center,#0a0f26 0 42%,#05081a 72% 100%);overflow:hidden;box-shadow:inset 0 15px 26px rgba(0,0,0,.7),0 8px 0 rgba(255,255,255,.07);isolation:isolate;touch-action:manipulation;cursor:pointer}
 .hole:after{content:"";position:absolute;inset:6% 10% auto 10%;height:20%;border-radius:50%;background:radial-gradient(ellipse,rgba(120,140,255,.18),transparent 70%);pointer-events:none}
 .mole{position:absolute;left:50%;bottom:-92%;transform:translateX(-50%);width:76%;height:94%;transition:bottom .17s cubic-bezier(.2,.85,.2,1),transform .12s;pointer-events:none}
@@ -203,7 +203,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @keyframes float{to{transform:translate(-50%,-46px);opacity:0}}
 .starFly{position:fixed;z-index:9999;pointer-events:none;font-size:22px;left:0;top:0;transform:translate(-50%,-50%);animation:flyStar .75s cubic-bezier(.2,.7,.2,1) forwards;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
 @keyframes flyStar{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.25) rotate(40deg)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.55) rotate(260deg)}}
-.legend{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;color:#9aa6d6;font-size:12px}
+.legend{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;color:#9aa6d6;font-size:12px}
 
 /* ---- Minis ---- */
 .miniCard{max-width:1000px;margin:auto;text-align:center}
@@ -553,6 +553,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   .progressDots{margin:8px 0 12px}
   .gHud{margin:4px 0 8px}
   .lifeGrid{max-width:480px;gap:9px}
+  .gameGrid{max-width:860px;gap:10px}
   .gMsg{min-height:32px;margin:6px auto}
   .catchArena{height:300px}
   .gameShell{padding:clamp(10px,1.4vw,18px)}
