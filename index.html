@@ -1134,7 +1134,7 @@ function roundText(){return `Misión ${state.missionIndex+1} de 4`}
 const KEY_MIN_PTS=3300;
 function currentLevel(){
   const p=gScore();
-  if(p>=4200)return "Bioleyenda";
+  if(p>=3800)return "Bioleyenda";
   if(p>=3300)return "Bioexperto";
   if(p>=2700)return "Bioespecialista";
   if(p>=2100)return "Bioaprendiz";
@@ -1142,7 +1142,7 @@ function currentLevel(){
   return "Novato";
 }
 const LEVELS=[
-  ["Bioleyenda","≥ 4.200 puntos · nivel máximo · activa la llave"],
+  ["Bioleyenda","≥ 3.800 puntos · nivel máximo · activa la llave"],
   ["Bioexperto","≥ 3.300 puntos · activa la llave"],
   ["Bioespecialista","≥ 2.700 puntos"],
   ["Bioaprendiz","≥ 2.100 puntos"],
@@ -1926,7 +1926,7 @@ function replayForKey(){
 }
 
 /* ---- Estantes del laboratorio (desafío final) ---- */
-const SHELF_SECONDS=45,SHELF_CAP=3,SHELF_COUNT=10,SHELF_PER_TYPE=6;
+const SHELF_SECONDS=105,SHELF_CAP=3,SHELF_COUNT=10,SHELF_PER_TYPE=6;
 const FLASK_DARK={carbohidratos:"#b06f00",lipidos:"#c24525",proteinas:"#5b3bb8",acidos:"#0a8d86"};
 function flaskSVG(key){
   const c=DATA.find(d=>d.key===key).color,d=FLASK_DARK[key]||"#333";
