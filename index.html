@@ -2165,35 +2165,42 @@ function drawCertificate(av){
   x.fillText("Completó las cuatro misiones del laboratorio y los seis juegos de la",90,420);
   x.fillText("Expedición a la Laguna Socompa, liberó el cofre del certificado",90,454);
   x.fillText("y ordenó los estantes del laboratorio.",90,486);
+  const rr=(px,py,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(px,py,w,h,r);else x.rect(px,py,w,h)};
   /* stats */
   const stats=[["Puntaje",gScore()],["Estrellas","★ "+gStars()],["Precisión",totalAccuracy()+"%"],["Aciertos",state.totalHits],["Remontadas",state.results.reduce((a,r)=>a+(r.recoveries||0),0)],["Expedición",expAcc()+"%"],["Llaves",state.door.attempts]];
   stats.forEach((s,i)=>{
     const bx=90+i*152,by=500;
     x.fillStyle="#faf3df";x.strokeStyle="#e3d3a2";x.lineWidth=2.5;
-    x.beginPath();x.roundRect(bx,by,140,92,14);x.fill();x.stroke();
+    rr(bx,by,140,92,14);x.fill();x.stroke();
     x.fillStyle="#8a744a";x.font="800 14px 'Trebuchet MS',sans-serif";x.fillText(s[0].toUpperCase(),bx+14,by+30);
     x.fillStyle="#3a2c10";x.font="1000 27px 'Trebuchet MS',sans-serif";x.fillText(String(s[1]),bx+14,by+70);
   });
   /* biomoléculas */
   DATA.forEach((d,i)=>{
     const bx=90+i*270,by=650;
-    x.fillStyle=d.color;x.beginPath();x.roundRect(bx,by+8,18,18,5);x.fill();
+    x.fillStyle=d.color;rr(bx,by+8,18,18,5);x.fill();
     x.fillStyle="#3a2c10";x.font="900 20px 'Trebuchet MS',sans-serif";x.fillText(d.label,bx+26,by+23);
     x.fillStyle="#8a744a";x.font="16px 'Trebuchet MS',sans-serif";x.fillText(d.atoms.join(" · "),bx+26,by+46);
   });
   const code=$("certCode").textContent.replace("Código ","");
   x.strokeStyle="#d9b45a";x.setLineDash([7,5]);x.lineWidth=2.5;
-  x.beginPath();x.roundRect(90,740,220,52,10);x.stroke();x.setLineDash([]);
+  rr(90,740,220,52,10);x.stroke();x.setLineDash([]);
   x.fillStyle="#8a6a14";x.font="1000 22px 'Trebuchet MS',sans-serif";x.fillText(code,112,773);
   x.fillStyle="#6b5d3f";x.font="20px 'Trebuchet MS',sans-serif";x.textAlign="right";
-  x.fillText(new Intl.DateTimeFormat("es-AR",{dateStyle:"long"}).format(new Date()),1150,773);
+  let certDateTxt=new Date().toLocaleDateString("es-AR");
+  try{certDateTxt=new Intl.DateTimeFormat("es-AR",{dateStyle:"long"}).format(new Date())}catch(_){}
+  x.fillText(certDateTxt,1150,773);
   x.textAlign="center";x.fillStyle="#a08c58";x.font="800 15px 'Trebuchet MS',sans-serif";
   x.fillText("Diseño: Patricia Inés Castro · Desarrollo asistido: Devin AI",620,812);
   cv.toBlob(b=>{
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(b);
+    if(!b)return;
+    const url=URL.createObjectURL(b),a=document.createElement("a");
+    a.href=url;
     a.download=`certificado_${norm(state.player.last).replace(/\s/g,"_")}.png`;
-    a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+    if(isIOS)a.target="_blank";
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
   },"image/png");
 }
 $("downloadBtn").addEventListener("click",downloadCertificate);
