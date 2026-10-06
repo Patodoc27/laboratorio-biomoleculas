@@ -1899,7 +1899,7 @@ function renderDoors(){
   $("doorsGrid").innerHTML=[0,1,2,3,4].map(i=>{
     const f=state.door.failed.has(i);
     return `<button type="button" class="doorBtn ${f?"failed":""}" data-door="${i}" ${f?"disabled":""} aria-label="Cofre ${i+1}">
-      <div class="chest">${chestSVG(false)}<span class="chestNum">${f?"✗":i+1}</span></div>
+      <div class="chest">${chestSVG(f)}<span class="chestNum">${f?"✗":i+1}</span></div>
     </button>`;
   }).join("");
   document.querySelectorAll(".doorBtn:not(:disabled)").forEach(b=>b.addEventListener("click",()=>chooseDoor(Number(b.dataset.door))));
@@ -1921,6 +1921,7 @@ function chooseDoor(index){
   }else{
     state.door.failed.add(index);saveProgress();
     sel.classList.add("failed");
+    sel.querySelector(".chest").innerHTML=chestSVG(true)+`<span class="chestNum">✗</span>`;
     $("doorStatus").className="doorStatus bad";
     if(state.door.keys>0){
       $("doorStatus").textContent="Este cofre estaba vacío, pero todavía te queda una llave: el cofre correcto se sortea de nuevo. Prueba con otro.";
@@ -1937,9 +1938,12 @@ function chooseDoor(index){
 }
 function replayForKey(){
   stopAllHoles();
-  state.order=shuffle(DATA);state.missionIndex=0;state.results=[];
-  state.totalScore=0;state.totalStars=0;state.totalHits=0;state.totalWrong=0;
-  state.door.exitDoor=null;state.door.keyAvailable=false;state.door.certificateUnlocked=false;state.door.keys=0;
+  const attempts=state.door.attempts;
+  resetGameState();
+  state.door.attempts=attempts;
+  state.recoveryAttempts=0;state.recoverySelectAttempts=0;state.recoveryUnlocked=false;state.recoveryHadFailure=false;
+  state._r0=null;state._retrying=false;
+  saveProgress();
   showMap();
 }
 
