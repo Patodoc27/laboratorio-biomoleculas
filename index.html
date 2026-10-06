@@ -2514,23 +2514,23 @@ GAMES.sort={
       if(good){
         streak++;ok++;const pts=streak>=3?EXP_HIT*2:EXP_HIT;score+=pts;
         gMsg(`${streak>=3?"🔥 x2 · ":""}✔ ${data}`,"good");beep("good");
-        const card=$("sortSlot").firstChild;card.classList.add(a==="p"?"flyL":a==="r"?"flyR":"flyD");
+        const card=$("sortSlot").firstChild;if(card)card.classList.add(a==="p"?"flyL":a==="r"?"flyR":"flyD");
         setTimeout(next,260);
       }else{
         streak=0;wrong++;score=Math.max(0,score-5);
         gMsg(`${a===null?"⏳ Se escapó.":"✘"} ${data}`,"bad");beep("bad");
-        $("sortSlot").firstChild.classList.add("shake");bin.classList.add("hint");
+        const sc=$("sortSlot")&&$("sortSlot").firstChild;if(sc)sc.classList.add("shake");if(bin)bin.classList.add("hint");
         queue.splice(2,0,cur);
-        setTimeout(()=>{bin.classList.remove("hint");next()},900);
+        setTimeout(()=>{if(bin)bin.classList.remove("hint");next()},900);
       }
-      $("gScore").textContent=score;$("gExtra").textContent=ok;
+      const s1=$("gScore");if(s1)s1.textContent=score;const e1=$("gExtra");if(e1)e1.textContent=ok;
       if(wrong>=4){c.stop();cur=null;setTimeout(()=>gameOver({ok,wrong,score,tier:1,mustRetry:true,retryMsg:"Llegaste a 4 errores.",title:"4 errores",stats:[["Aciertos",ok],["Errores",wrong],["Puntos",score]]}),900)}
     };
     document.querySelectorAll(".sortBin").forEach(b=>b.addEventListener("click",()=>answer(b.dataset.a)));
     let raf=null;
     const pat=now=>{
       if(!G)return;
-      if(cur&&!busy){const left=Math.max(0,(deadline-now)/(patience*1000));$("patBar").style.transform=`scaleX(${left})`;if(left<=0)answer(null)}
+      if(cur&&!busy){const left=Math.max(0,(deadline-now)/(patience*1000));const pb=$("patBar");if(pb)pb.style.transform=`scaleX(${left})`;if(left<=0)answer(null)}
       raf=requestAnimationFrame(pat);
     };
     const c=clock(45,()=>{
@@ -2564,8 +2564,8 @@ GAMES.catch={
       <div class="touchPad"><button type="button" id="padL">◀</button><button type="button" id="padR">▶</button></div>`;
     const arena=$("gArena"),catcher=$("catcher");
     const W=()=>arena.clientWidth,H=()=>arena.clientHeight;
-    const paint=()=>{$("pinkFill").style.height=Math.min(100,caught/GOAL*100)+"%";
-      $("gExtra").textContent=`${caught} / ${GOAL}`;$("gExtra").style.color=caught>=GOAL?"var(--green)":""};
+    const paint=()=>{const pf=$("pinkFill");if(pf)pf.style.height=Math.min(100,caught/GOAL*100)+"%";
+      const ge=$("gExtra");if(ge){ge.textContent=`${caught} / ${GOAL}`;ge.style.color=caught>=GOAL?"var(--green)":""}};
     const aim=e=>{const r=arena.getBoundingClientRect();tx=Math.min(94,Math.max(6,(e.clientX-r.left)/r.width*100))};
     arena.addEventListener("pointermove",aim);arena.addEventListener("pointerdown",aim);
     const hold=(id,v)=>{const b=$(id);b.addEventListener("pointerdown",()=>vx=v);["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>vx=0))};
@@ -2599,7 +2599,7 @@ GAMES.catch={
           else{wrong++;const lost=Math.min(3,caught);caught-=lost;score=Math.max(0,score-15);stun=1.2;floatAt(arena,fx,fy,"−3","bad");beep("bad");
             catcher.classList.remove("cough");void catcher.offsetWidth;catcher.classList.add("cough");
             gMsg(`${it.type==="s"?"🧂 La sal":"🪨 La piedra"} no es alimento: pierdes ${lost} diatomea${lost===1?"":"s"}.`,"bad")}
-          paint();$("gScore").textContent=score;
+          paint();const gs=$("gScore");if(gs)gs.textContent=score;
         }else if(!it.done&&it.y>104){it.done=true;it.el.remove()}
       }
       items=items.filter(i=>!i.done);
@@ -2687,7 +2687,7 @@ GAMES.belt={
       tally(k===f.m.f);
       if(wrong>5){beltFail();return}
       setTimeout(()=>f.el.remove(),380);
-      $("gScore").textContent=score;$("gExtra").textContent=ok;mark();
+      const s2=$("gScore");if(s2)s2.textContent=score;const e2=$("gExtra");if(e2)e2.textContent=ok;mark();
     };
     document.querySelectorAll(".molBtn").forEach(b=>b.addEventListener("click",()=>answer(b.dataset.k)));
     const loop=now=>{
@@ -2741,8 +2741,8 @@ GAMES.flight={
       <div class="patience"><div id="patBar"></div></div>
       <div id="gMsg" class="gMsg">¿Qué molécula la ayuda?</div>
       <div class="molBtns">${shuffle(FLIGHT_MOL).map(m=>`<button type="button" class="molBtn" data-k="${m.k}" style="--c:${m.c}"><i></i>${m.t}</button>`).join("")}</div>`;
-    $("gTime").textContent="—";$("gBar").style.transform="scaleX(1)";
-    const moveBird=()=>{$("rBird").style.left=`calc(${(i/(evs.length))*100}% - 4px)`};
+    $("gTime").textContent="—";const gb=$("gBar");if(gb)gb.style.transform="scaleX(1)";
+    const moveBird=()=>{const rb=$("rBird");if(rb)rb.style.left=`calc(${(i/(evs.length))*100}% - 4px)`};
     const show1=()=>{
       if(!G||!$("evCard"))return;
       if(i>=evs.length||lives<=0){finish();return}
@@ -2755,12 +2755,12 @@ GAMES.flight={
     const pick=k=>{
       if(!cur||busy)return;busy=true;
       const good=k===cur.a,dot=document.querySelector(`.rDot[data-k="${i}"]`);
-      const right=document.querySelector(`.molBtn[data-k="${cur.a}"]`);right.classList.add("correct");
-      if(good){ok++;score+=EXP_HIT+Math.round(Math.max(0,(deadline-performance.now())/1000));dot.classList.add("ok");beep("good");gMsg("✔ "+cur.w,"good")}
-      else{wrong++;lives--;dot.classList.add("bad");beep("bad");
-        if(k){document.querySelector(`.molBtn[data-k="${k}"]`).classList.add("wrong")}
+      const right=document.querySelector(`.molBtn[data-k="${cur.a}"]`);if(right)right.classList.add("correct");
+      if(good){ok++;score+=EXP_HIT+Math.round(Math.max(0,(deadline-performance.now())/1000));if(dot)dot.classList.add("ok");beep("good");gMsg("✔ "+cur.w,"good")}
+      else{wrong++;lives--;if(dot)dot.classList.add("bad");beep("bad");
+        if(k){const wk=document.querySelector(`.molBtn[data-k="${k}"]`);if(wk)wk.classList.add("wrong")}
         gMsg((k?"✘ ":"⏳ Se acabó el tiempo. ")+cur.w,"bad")}
-      i++;moveBird();setLives(lives);$("gScore").textContent=score;$("gExtra").textContent=ok;
+      i++;moveBird();setLives(lives);const s3=$("gScore");if(s3)s3.textContent=score;const e3=$("gExtra");if(e3)e3.textContent=ok;
       setTimeout(show1,good?1300:2300);
     };
     const finish=()=>{
@@ -2770,8 +2770,8 @@ GAMES.flight={
     document.querySelectorAll(".molBtn").forEach(b=>b.addEventListener("click",()=>pick(b.dataset.k)));
     const loop=now=>{
       if(!G)return;
-      if(cur&&!busy){const left=Math.max(0,(deadline-now)/(span*1000));$("patBar").style.transform=`scaleX(${left})`;
-        $("gTime").textContent=Math.ceil(left*span);if(left<=0)pick(null)}
+      if(cur&&!busy){const left=Math.max(0,(deadline-now)/(span*1000));const pb=$("patBar");if(pb)pb.style.transform=`scaleX(${left})`;
+        const gt=$("gTime");if(gt)gt.textContent=Math.ceil(left*span);if(left<=0)pick(null)}
       raf=requestAnimationFrame(loop);
     };
     G={stop(){cancelAnimationFrame(raf)},key(e){const n=+e.key;if(n>=1&&n<=4){const b=document.querySelectorAll(".molBtn")[n-1];if(b)pick(b.dataset.k)}}};
@@ -2834,7 +2834,7 @@ GAMES.life={
         gMsg(`✘ ${item.n}: no está vivo.`,"bad");
         if(wrong>5){c.stop();gameOver({ok,wrong,score,tier:1,mustRetry:true,title:"Más de 5 errores",stats:[["Seres vivos",`${ok} de ${GOAL}`],["Errores",wrong],["Puntos",score]]});return}}
       setTimeout(()=>h.p.classList.remove("flashGood","flashBad"),260);
-      $("gScore").textContent=score;$("gExtra").textContent=`${ok} / ${GOAL}`;microUpd();
+      const s4=$("gScore");if(s4)s4.textContent=score;const e4=$("gExtra");if(e4)e4.textContent=`${ok} / ${GOAL}`;microUpd();
       hide(h,h.token);
     };
     const tick=()=>{if(!G)return;const want=c.elapsed()<15?2:3;while(holes.filter(h=>h.busy).length<want&&holes.some(h=>!h.busy))spawn();sched=setTimeout(tick,260)};
