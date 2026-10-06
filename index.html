@@ -1669,11 +1669,20 @@ function checkRecovery(){
   }else if(state.recoverySelectAttempts===2){
     $("recoveryFeedback").textContent=`Segundo intento: esta biomolécula tiene ${exp.length} elementos. Revisa cuáles sobran o faltan.`;
   }else{
-    $("recoveryFeedback").textContent="Observa la composición durante dos segundos, memorízala y reconstrúyela.";
+    $("recoveryFeedback").textContent="Observa la composición durante dos segundos y memorízala.";
     const f=$("memoryFlash");
     f.innerHTML=atomChips(state.current.atoms);
     f.classList.remove("hidden");
-    setTimeout(()=>{f.classList.add("hidden");f.innerHTML="";document.querySelectorAll("#recoveryAtoms .pickAtom").forEach(b=>b.classList.remove("selected"))},2200);
+    setTimeout(()=>{
+      f.classList.add("hidden");f.innerHTML="";
+      document.querySelectorAll("#recoveryAtoms .pickAtom").forEach(b=>b.classList.remove("selected"));
+      if(!state.recoveryUnlocked){
+        state.recoveryUnlocked=true;
+        $("checkRecoveryBtn").classList.add("hidden");$("retryRoundBtn").classList.remove("hidden");
+        $("recoveryFeedback").className="recoveryFeedback good";
+        $("recoveryFeedback").textContent=`La composición correcta es ${exp.join(", ")}. Ahora puedes reintentar la misión.`;
+      }
+    },2200);
   }
   beep("bad");
 }
@@ -1845,9 +1854,10 @@ function showKeyGate(){
      <div class="masteryItem ${expAcc()>=KEY_MIN_EXP?"ok":"retry"}"><small>Expedición (≥${KEY_MIN_EXP}%)</small><strong>${expAcc()}%</strong></div>`;
   $("levelList").innerHTML=LEVELS.map(([n,d])=>`<div class="levelItem ${n===lvl?"me":""}"><b>${n}</b><span>${d}</span></div>`).join("");
   if(ok){
+    state.door.keys=state.shelfDone?2:1;
     state.door.keyAvailable=true;
     $("keyGateIcon").textContent="🔑";
-    $("keyGateTitle").textContent="¡Ganaste la llave maestra!";
+    $("keyGateTitle").textContent=state.shelfDone?"¡Ganaste dos llaves maestras!":"¡Ganaste la llave maestra!";
     $("keyGateText").textContent=`Llegaste a ${lvl} y resolviste la expedición con ${expAcc()}% de respuestas correctas.`;
     $("keyGateActions").innerHTML=state.shelfDone?'<button id="goDoorsBtn" class="primary bigBtn">Ir a los cofres</button>':'<button id="goDoorsBtn" class="primary bigBtn">Ir a los estantes</button>';
     $("goDoorsBtn").addEventListener("click",()=>state.shelfDone?prepareDoors():startShelves());
@@ -1868,7 +1878,8 @@ function showKeyGate(){
   }
 }
 function prepareDoors(){
-  if(!state.door.keyAvailable)return;
+  if(!(state.door.keys>0))return;
+  state.door.keyAvailable=true;
   let avail=[0,1,2,3,4].filter(i=>!state.door.failed.has(i));
   if(!avail.length){state.door.failed.clear();avail=[0,1,2,3,4]}
   const prev=lastExitDoor();let cand=avail;
@@ -1880,7 +1891,7 @@ function prepareDoors(){
   state.door.attempts++;
   show("doors");renderDoors();
   $("doorStatus").className="doorStatus";
-  $("doorStatus").textContent="Selecciona un cofre. Con esta llave puedes abrir uno solo.";
+  $("doorStatus").textContent=`Selecciona un cofre. Te ${state.door.keys===1?"queda una sola llave":"quedan "+state.door.keys+" llaves"}.`;
   $("doorActions").innerHTML="";
   $("doorAttemptNote").textContent=`Llave N° ${state.door.attempts} · Cofres ya probados: ${state.door.failed.size}`;
 }
@@ -1896,6 +1907,7 @@ function renderDoors(){
 function chooseDoor(index){
   if(!state.door.keyAvailable)return;
   state.door.keyAvailable=false;
+  state.door.keys--;
   document.querySelectorAll(".doorBtn").forEach(b=>b.disabled=true);
   const sel=document.querySelector(`.doorBtn[data-door="${index}"]`);
   if(!sel)return;
@@ -1910,10 +1922,16 @@ function chooseDoor(index){
     state.door.failed.add(index);saveProgress();
     sel.classList.add("failed");
     $("doorStatus").className="doorStatus bad";
-    $("doorStatus").textContent="Este cofre estaba vacío y la llave ya se usó. No pasa nada: gana otra llave jugando de nuevo las misiones y prueba con otro cofre. Los que insisten, llegan.";
-    $("doorActions").innerHTML='<button id="newKeyBtn" class="primary">🔁 Ganar otra llave</button>';
+    if(state.door.keys>0){
+      $("doorStatus").textContent="Este cofre estaba vacío, pero todavía te queda una llave: el cofre correcto se sortea de nuevo. Prueba con otro.";
+      $("doorActions").innerHTML='<button id="nextKeyBtn" class="primary">🔑 Usar la otra llave</button>';
+      $("nextKeyBtn").addEventListener("click",prepareDoors);
+    }else{
+      $("doorStatus").textContent="Este cofre estaba vacío y ya usaste todas tus llaves. No pasa nada: gana otra llave jugando de nuevo las misiones y prueba con otro cofre. Los que insisten, llegan.";
+      $("doorActions").innerHTML='<button id="newKeyBtn" class="primary">🔁 Ganar otra llave</button>';
+      $("newKeyBtn").addEventListener("click",replayForKey);
+    }
     $("doorAttemptNote").textContent=`Llave N° ${state.door.attempts} · Cofres ya probados: ${state.door.failed.size}`;
-    $("newKeyBtn").addEventListener("click",replayForKey);
     beep("bad");
   }
 }
@@ -1921,7 +1939,7 @@ function replayForKey(){
   stopAllHoles();
   state.order=shuffle(DATA);state.missionIndex=0;state.results=[];
   state.totalScore=0;state.totalStars=0;state.totalHits=0;state.totalWrong=0;
-  state.door.exitDoor=null;state.door.keyAvailable=false;state.door.certificateUnlocked=false;
+  state.door.exitDoor=null;state.door.keyAvailable=false;state.door.certificateUnlocked=false;state.door.keys=0;
   showMap();
 }
 
@@ -2057,8 +2075,8 @@ function checkShelfWin(){
     state.shelf.playing=false;clearInterval(state.shelf.timer);state.shelf.timer=null;
     const bonus=Math.max(0,state.shelf.left);state.totalScore+=bonus;
     $("shelfStatus").className="feedback good";
-    $("shelfStatus").textContent=`¡Laboratorio en orden! Bonus por tiempo restante: +${bonus} puntos.`;
-    state.shelfDone=true;saveProgress();
+    $("shelfStatus").textContent=`¡Laboratorio en orden! Bonus por tiempo restante: +${bonus} puntos y una llave extra.`;
+    state.door.keys=2;state.shelfDone=true;saveProgress();
     $("shelfActions").innerHTML='<button id="shelfCertBtn" class="primary bigBtn">🔑 Ir a los cofres</button>';
     $("shelfCertBtn").addEventListener("click",prepareDoors);
     beep("win");
