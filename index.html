@@ -1437,6 +1437,7 @@ function buildCollector(){
   $("collector").innerHTML=state.current.atoms.map(e=>`<div class="collectChip" data-el="${e}">${e}</div>`).join("");
 }
 function startGame(){
+  if(!state.current)return;
   if(!state._retrying)state._r0={score:state.totalScore,stars:state.totalStars,hits:state.totalHits,wrong:state.totalWrong};
   state._retrying=false;
   state.ending=false;
