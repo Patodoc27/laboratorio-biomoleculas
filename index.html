@@ -531,6 +531,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .reflOpts{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:760px;margin:0 auto}
 .reflBtn{border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:15px;padding:10px 14px;font-weight:900;font-size:14px}
 .reflBtn.selected{border-color:var(--violet);background:#f3f1ff;box-shadow:0 0 0 3px rgba(104,87,248,.14)}
+.reflMiss{outline:2.5px dashed #e05252;outline-offset:5px;border-radius:14px;animation:reflShake .4s ease}
+@keyframes reflShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#reflHint{min-height:20px;margin-top:10px;font-weight:900;font-size:14px;color:#c43d3d}
 #reflText{display:block;width:min(640px,100%);margin:18px auto;min-height:70px;border:2px solid var(--line);border-radius:15px;padding:11px 13px;font:inherit;font-size:14.5px;resize:vertical}
 .mcTable{width:100%;border-collapse:collapse;margin-top:11px;font-size:13.5px;background:#fff;border-radius:11px;overflow:hidden}
 .mcTable th,.mcTable td{border:1px solid #f0dca4;padding:7px 9px;text-align:center}
@@ -2959,13 +2962,21 @@ function showReflection(){
     <div class="reflOpts" id="reflA">${hard.map((t,i)=>`<button type="button" class="reflBtn" data-i="${i}">${t}</button>`).join("")}</div>
     <p class="reflQ">2. ¿Qué harías distinto la próxima vez?</p>
     <div class="reflOpts" id="reflB">${next.map((t,i)=>`<button type="button" class="reflBtn" data-i="${i}">${t}</button>`).join("")}</div>
+    <div id="reflHint"></div>
     <textarea id="reflText" maxlength="240" placeholder="Si quieres, cuéntalo con tus palabras (opcional)"></textarea>
-    <button id="reflGo" type="button" class="primary bigBtn" disabled>🎓 Ver mi certificado</button>`;
+    <button id="reflGo" type="button" class="primary bigBtn">🎓 Ver mi certificado</button>`;
   const pick=(id,cb)=>document.querySelectorAll(`#${id} .reflBtn`).forEach(x=>x.addEventListener("click",()=>{
     document.querySelectorAll(`#${id} .reflBtn`).forEach(y=>y.classList.remove("selected"));x.classList.add("selected");cb(+x.dataset.i);
-    $("reflGo").disabled=!(a!==null&&b!==null)}));
+    $("reflHint").textContent=""}));
   pick("reflA",i=>a=i);pick("reflB",i=>b=i);
   $("reflGo").addEventListener("click",()=>{
+    const miss=[];
+    if(a===null)miss.push("reflA");if(b===null)miss.push("reflB");
+    if(miss.length){
+      miss.forEach(id=>{const g=$(id);g.classList.remove("reflMiss");void g.offsetWidth;g.classList.add("reflMiss")});
+      $("reflHint").textContent="Elegí una opción en cada pregunta para continuar.";
+      beep("bad");return;
+    }
     const txt=$("reflText").value.trim();
     updateRecord(r=>{r.costo=hard[a];r.distinto=next[b];r.reflexion=txt});
     renderCertificate();
