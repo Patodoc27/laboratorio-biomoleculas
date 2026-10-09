@@ -1202,6 +1202,7 @@ function registerPlayer(){
     inicio:new Date().toISOString(),fin:null,estado:"En curso",
     puntaje:null,estrellas:null,precision:null,expedicion:null,rango:null,codigo:null,llaves:0};
   recs.push(rec);saveRecords(recs);state.recordId=rec.id;
+  sendRecord("","Registrado");
 }
 function completeRecord(codigo){
   const recs=loadRecords();const r=recs.find(x=>x.id===state.recordId);if(!r)return;
@@ -1843,6 +1844,7 @@ function showTransition(){
      <div class="miniStat"><small>Remontadas</small><strong>${state.recoveryAttempts}</strong></div>`;
   $("transitionRecall").innerHTML=`Recuerda: <b>${state.current.label}</b> → ${state.current.atoms.map(atomTag).join(" ")} ${state.recoveryHadFailure?`· ★★★★★ extra por remontar la misión.`:""}`;
   state.missionIndex++;updateDots();
+  sendRecord("",`Misión ${state.results.length} de 4`);
 }
 $("toMapBtn").addEventListener("click",showMap);
 
@@ -1924,6 +1926,7 @@ function chooseDoor(index){
     setTimeout(showReflection,1600);
   }else{
     state.door.failed.add(index);saveProgress();
+    sendRecord("",`Cofres: llave N° ${state.door.attempts} usada`);
     sel.classList.add("failed");
     sel.querySelector(".chest").innerHTML=chestSVG(true)+`<span class="chestNum">✗</span>`;
     $("doorStatus").className="doorStatus bad";
@@ -2085,6 +2088,7 @@ function checkShelfWin(){
     $("shelfStatus").className="feedback good";
     $("shelfStatus").textContent=`¡Laboratorio en orden! Bonus por tiempo restante: +${bonus} puntos y una llave extra.`;
     state.door.keys=2;state.shelfDone=true;saveProgress();
+    sendRecord("","Estantes ordenados");
     $("shelfActions").innerHTML='<button id="shelfCertBtn" class="primary bigBtn">🔑 Ir a los cofres</button>';
     $("shelfCertBtn").addEventListener("click",prepareDoors);
     beep("win");
@@ -2117,7 +2121,7 @@ function renderCertificate(){
   if(state.exp.done!==STATIONS.length)return;
   const code=certCode();
   completeRecord(code);clearProgress();
-  sendRecord(code);
+  sendRecord(code,"Certificado");
   $("certSeal").innerHTML=`<img src="${state.player.avatar}" alt="">`;
   $("certName").textContent=`${state.player.first} ${state.player.last}`;
   $("certSection").textContent=`Curso ${state.player.section}`;
@@ -2266,13 +2270,13 @@ const KEY_MIN_EXP=70, EXP_HIT=10, EXP_MC_SCORE=20, EXP_MC_STARS=3;
 /* Registro docente en Google Sheets: pegar acá la URL del Apps Script publicado.
    Si queda vacío, el juego no envía nada y funciona igual. */
 const SHEETS_ENDPOINT="https://script.google.com/macros/s/AKfycbw86SMuDdbdq_IrFBW0rW_4k4lihu-ebN7IKMvlzIREktWdIma4hgzvT_yN7Wwv3GFbTg/exec";
-function sendRecord(code){
+function sendRecord(code,etapa){
   if(!SHEETS_ENDPOINT)return;
   try{
     const rec=loadRecords().find(x=>x.id===state.recordId)||{};
-    const payload={fecha:new Date().toLocaleString("es-AR"),nombre:state.player.first,apellido:state.player.last,
+    const payload={id:state.recordId||"",etapa:etapa||"",fecha:new Date().toLocaleString("es-AR"),nombre:state.player.first,apellido:state.player.last,
       seccion:state.player.section,rango:currentLevel(),puntaje:gScore(),estrellas:gStars(),
-      precision:totalAccuracy()+"%",expedicion:expAcc()+"%",codigo:code,
+      precision:totalAccuracy()+"%",expedicion:expAcc()+"%",codigo:code||"",
       remontadas:state.results.reduce((a,r)=>a+(r.recoveries||0),0),llaves:state.door.attempts,
       le_costo:rec.costo||"",haria_distinto:rec.distinto||"",reflexion:rec.reflexion||"",
       guardaparque:JSON.stringify(rec.mc||{}),
@@ -2459,6 +2463,7 @@ function finishStation(){
   const g=ST.game||{ok:0,total:0,score:0,stars:0,tier:0};
   state.exp.results.push({key:ST.key,name:STATIONS[ST.idx].name,tier:g.tier,mc:ST.mcOk});
   state.exp.done++;
+  sendRecord("",`Expedición ${state.exp.done} de ${STATIONS.length}`);
   showMap();
 }
 
