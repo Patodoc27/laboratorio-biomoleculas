@@ -2278,8 +2278,6 @@ function sendRecord(code,etapa){
       seccion:state.player.section,rango:currentLevel(),puntaje:gScore(),estrellas:gStars(),
       precision:totalAccuracy()+"%",expedicion:expAcc()+"%",codigo:code||"",
       remontadas:state.results.reduce((a,r)=>a+(r.recoveries||0),0),llaves:state.door.attempts,
-      le_costo:rec.costo||"",haria_distinto:rec.distinto||"",reflexion:rec.reflexion||"",
-      guardaparque:JSON.stringify(rec.mc||{}),
       inicio:rec.inicio||"",
       duracion_min:rec.inicio?Math.round((Date.now()-new Date(rec.inicio).getTime())/60000):""};
     fetch(SHEETS_ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
