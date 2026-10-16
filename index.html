@@ -1923,7 +1923,7 @@ function chooseDoor(index){
     $("doorStatus").className="doorStatus good";
     $("doorStatus").textContent="¡Liberaste el cofre del certificado! Tu diploma te espera.";
     beep("win");
-    setTimeout(showReflection,1600);
+    setTimeout(renderCertificate,1600);
   }else{
     state.door.failed.add(index);saveProgress();
     sendRecord("",`Cofres: llave N° ${state.door.attempts} usada`);
@@ -2228,7 +2228,7 @@ function drawCertificate(av){
     a.href=url;
     a.download=`certificado_${norm(state.player.last).replace(/\s/g,"_")}.png`;
     const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
-    if(isIOS)a.target="_blank";
+    if(isIOS||!("download" in a)){a.target="_blank";a.rel="noopener"}
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),4000);
   },"image/png");
