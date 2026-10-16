@@ -984,9 +984,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <span id="certDate" class="sub" style="font-size:12.5px"></span>
         <div class="actions noPrint">
           <button id="downloadBtn" class="secondary">⬇ Descargar imagen</button>
+          <button id="viewImgBtn" class="secondary" title="Si no se descarga, abrila en otra pestaña">🔍 Ver imagen</button>
           <button id="printBtn" class="secondary">🖨 Imprimir</button>
           <button id="replayBtn" class="primary">↻ Nueva partida</button>
         </div>
+        <p class="sub noPrint" style="font-size:12px;margin-top:8px">Si la imagen no se descarga, tocá "Ver imagen" y haz una captura de pantalla.</p>
       </div>
     </div>
   </div>
@@ -2117,8 +2119,6 @@ function certCode(){
 }
 function renderCertificate(){
   if(!state.door.certificateUnlocked)return;
-  if(state.results.length!==4||new Set(state.results.map(r=>r.key)).size!==4)return;
-  if(state.exp.done!==STATIONS.length)return;
   const code=certCode();
   completeRecord(code);clearProgress();
   sendRecord(code,"Certificado");
@@ -2155,13 +2155,15 @@ function confettiBurst(){
     setTimeout(()=>c.remove(),5600);
   }
 }
-function downloadCertificate(){
+function downloadCertificate(){buildCertificate("download")}
+function viewCertificate(){buildCertificate("tab")}
+function buildCertificate(mode){
   const av=new Image();
-  av.onload=()=>drawCertificate(av);
-  av.onerror=()=>drawCertificate(null);
+  av.onload=()=>drawCertificate(av,mode);
+  av.onerror=()=>drawCertificate(null,mode);
   av.src=state.player.avatar;
 }
-function drawCertificate(av){
+function drawCertificate(av,mode){
   const cv=document.createElement("canvas");cv.width=1240;cv.height=880;
   const x=cv.getContext("2d");
   const g=x.createLinearGradient(0,0,1240,880);
@@ -2224,7 +2226,9 @@ function drawCertificate(av){
   x.fillText("Diseño: Patricia Inés Castro · Desarrollo asistido: Devin AI",620,812);
   cv.toBlob(b=>{
     if(!b)return;
-    const url=URL.createObjectURL(b),a=document.createElement("a");
+    const url=URL.createObjectURL(b);
+    if(mode==="tab"){window.open(url,"_blank","noopener");setTimeout(()=>URL.revokeObjectURL(url),60000);return}
+    const a=document.createElement("a");
     a.href=url;
     a.download=`certificado_${norm(state.player.last).replace(/\s/g,"_")}.png`;
     const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
@@ -2234,6 +2238,7 @@ function drawCertificate(av){
   },"image/png");
 }
 $("downloadBtn").addEventListener("click",downloadCertificate);
+$("viewImgBtn").addEventListener("click",viewCertificate);
 $("printBtn").addEventListener("click",()=>window.print());
 $("replayBtn").addEventListener("click",()=>{stopAllHoles();renderResume();show("start")});
 
