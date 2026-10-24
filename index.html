@@ -961,7 +961,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
         </div>
         <div class="certSeal" id="certSeal">★</div>
       </div>
-      <p class="certText">Completó las cuatro misiones del laboratorio — <b>hidratos de carbono, lípidos, proteínas y ácidos nucleicos</b> — y los seis juegos de la <b>Expedición a la Laguna Socompa</b>, alcanzó el nivel requerido para activar la llave maestra, liberó el cofre del certificado y ordenó los estantes del laboratorio.</p>
+      <p class="certText" id="certText">Completó las cuatro misiones del laboratorio — <b>hidratos de carbono, lípidos, proteínas y ácidos nucleicos</b> — y los seis juegos de la <b>Expedición a la Laguna Socompa</b>, alcanzó el nivel requerido para activar la llave maestra, liberó el cofre del certificado y ordenó los estantes del laboratorio.</p>
       <div class="overallStats">
         <div class="stat"><small>Puntaje</small><strong id="certScore">0</strong></div>
         <div class="stat"><small>Estrellas</small><strong>★ <span id="certStars">0</span></strong></div>
@@ -988,7 +988,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
           <button id="printBtn" class="secondary">🖨 Imprimir</button>
           <button id="replayBtn" class="primary">↻ Nueva partida</button>
         </div>
-        <p class="sub noPrint" style="font-size:12px;margin-top:8px">Si la imagen no se descarga, tocá "Ver imagen" y haz una captura de pantalla.</p>
+        <p class="sub noPrint" style="font-size:12px;margin-top:8px">Si la imagen no se descarga, usa "Ver imagen" y haz una captura de pantalla.</p>
       </div>
     </div>
   </div>
@@ -1146,6 +1146,8 @@ function currentLevel(){
   if(p>=1400)return "Bioexplorador";
   return "Novato";
 }
+const LEVEL_GRADE={"Bioleyenda":10,"Bioexperto":9,"Bioespecialista":8,"Bioaprendiz":7,"Bioexplorador":6,"Novato":5};
+function levelGrade(){return LEVEL_GRADE[currentLevel()]}
 const LEVELS=[
   ["Bioleyenda","≥ 3.800 puntos · nivel máximo · activa la llave"],
   ["Bioexperto","≥ 3.300 puntos · activa la llave"],
@@ -1877,12 +1879,15 @@ function showKeyGate(){
     if(!levelOK())falta.push(`llegar a Bioexperto o Bioleyenda (≥ ${KEY_MIN_PTS.toLocaleString("es-AR")} puntos)`);
     if(expAcc()<KEY_MIN_EXP)falta.push(`resolver la expedición con al menos ${KEY_MIN_EXP}% de respuestas correctas`);
     $("keyGateText").textContent=`Te falta ${falta.join(" y ")}.`;
+    $("keyGateText").textContent=`Te falta ${falta.join(" y ")}. Puedes reintentar para ganar la llave, o sacar tu certificado ahora con tu rango actual.`;
     let btns="";
     if(!levelOK())btns+='<button id="improveKeyBtn" class="primary">Reintentar las misiones</button>';
     if(expAcc()<KEY_MIN_EXP)btns+='<button id="redoExpBtn" class="primary">Repetir la expedición</button>';
+    btns+=`<button id="certAnywayBtn" class="secondary">📜 Obtener mi certificado (Nota: ${levelGrade()})</button>`;
     $("keyGateActions").innerHTML=btns;
     if($("improveKeyBtn"))$("improveKeyBtn").addEventListener("click",replayForKey);
     if($("redoExpBtn"))$("redoExpBtn").addEventListener("click",()=>{state.exp=newExp();showMap()});
+    $("certAnywayBtn").addEventListener("click",()=>{state.door.certificateUnlocked=true;state.door.direct=true;renderCertificate()});
   }
 }
 function prepareDoors(){
@@ -2125,7 +2130,8 @@ function renderCertificate(){
   $("certSeal").innerHTML=`<img src="${state.player.avatar}" alt="">`;
   $("certName").textContent=`${state.player.first} ${state.player.last}`;
   $("certSection").textContent=`Curso ${state.player.section}`;
-  $("rankLabel").textContent=`Rango: ${currentLevel()}`;
+  $("rankLabel").textContent=`Rango: ${currentLevel()} · Nota: ${levelGrade()}`;
+  if(state.door.direct)$("certText").innerHTML=`Completó las cuatro misiones del laboratorio — <b>hidratos de carbono, lípidos, proteínas y ácidos nucleicos</b> — y los seis juegos de la <b>Expedición a la Laguna Socompa</b>.`;
   $("certScore").textContent=gScore();
   $("certStars").textContent=gStars();
   $("certExp").textContent=`${expAcc()}%`;
@@ -2192,11 +2198,16 @@ function drawCertificate(av,mode){
   x.fillStyle="#241a06";x.font="1000 58px 'Trebuchet MS',sans-serif";
   x.fillText(`${state.player.first} ${state.player.last}`.slice(0,32),90,320);
   x.fillStyle="#6b5d3f";x.font="26px 'Trebuchet MS',sans-serif";
-  x.fillText(`Curso ${state.player.section} · Rango: ${currentLevel()}`,90,362);
+  x.fillText(`Curso ${state.player.section} · Rango: ${currentLevel()} · Nota: ${levelGrade()}`,90,362);
   x.font="24px 'Trebuchet MS',sans-serif";
-  x.fillText("Completó las cuatro misiones del laboratorio y los seis juegos de la",90,420);
-  x.fillText("Expedición a la Laguna Socompa, liberó el cofre del certificado",90,454);
-  x.fillText("y ordenó los estantes del laboratorio.",90,486);
+  if(state.door.direct){
+    x.fillText("Completó las cuatro misiones del laboratorio y los seis juegos",90,420);
+    x.fillText("de la Expedición a la Laguna Socompa.",90,454);
+  }else{
+    x.fillText("Completó las cuatro misiones del laboratorio y los seis juegos de la",90,420);
+    x.fillText("Expedición a la Laguna Socompa, liberó el cofre del certificado",90,454);
+    x.fillText("y ordenó los estantes del laboratorio.",90,486);
+  }
   const rr=(px,py,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(px,py,w,h,r);else x.rect(px,py,w,h)};
   /* stats */
   const stats=[["Puntaje",gScore()],["Estrellas","★ "+gStars()],["Precisión",totalAccuracy()+"%"],["Aciertos",state.totalHits],["Remontadas",state.results.reduce((a,r)=>a+(r.recoveries||0),0)],["Expedición",expAcc()+"%"],["Llaves",state.door.attempts]];
