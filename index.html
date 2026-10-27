@@ -1893,14 +1893,16 @@ function showKeyGate(){
 function prepareDoors(){
   if(!(state.door.keys>0))return;
   state.door.keyAvailable=true;
-  let avail=[0,1,2,3,4].filter(i=>!state.door.failed.has(i));
-  if(!avail.length){state.door.failed.clear();avail=[0,1,2,3,4]}
-  const prev=lastExitDoor();let cand=avail;
-  if(avail.length>1&&prev!==null&&avail.includes(prev)){
-    const w=avail.filter(i=>i!==prev);if(w.length)cand=w;
+  if(state.door.exitDoor===null||state.door.failed.has(state.door.exitDoor)){
+    let avail=[0,1,2,3,4].filter(i=>!state.door.failed.has(i));
+    if(!avail.length){state.door.failed.clear();avail=[0,1,2,3,4]}
+    const prev=lastExitDoor();let cand=avail;
+    if(avail.length>1&&prev!==null&&avail.includes(prev)){
+      const w=avail.filter(i=>i!==prev);if(w.length)cand=w;
+    }
+    state.door.exitDoor=cand[secureRandomIndex(cand.length)];
+    rememberExitDoor(state.door.exitDoor);
   }
-  state.door.exitDoor=cand[secureRandomIndex(cand.length)];
-  rememberExitDoor(state.door.exitDoor);
   state.door.attempts++;
   show("doors");renderDoors();
   $("doorStatus").className="doorStatus";
@@ -1938,11 +1940,11 @@ function chooseDoor(index){
     sel.querySelector(".chest").innerHTML=chestSVG(true)+`<span class="chestNum">✗</span>`;
     $("doorStatus").className="doorStatus bad";
     if(state.door.keys>0){
-      $("doorStatus").textContent="Este cofre estaba vacío, pero todavía te queda una llave: el cofre correcto se sortea de nuevo. Prueba con otro.";
+      $("doorStatus").textContent="Este cofre estaba vacío y ya quedó marcado: el cofre correcto no se mueve. Todavía te queda una llave, prueba con otro.";
       $("doorActions").innerHTML='<button id="nextKeyBtn" class="primary">🔑 Usar la otra llave</button>';
       $("nextKeyBtn").addEventListener("click",prepareDoors);
     }else{
-      $("doorStatus").textContent="Este cofre estaba vacío y ya usaste todas tus llaves. No pasa nada: gana otra llave jugando de nuevo las misiones y prueba con otro cofre. Los que insisten, llegan.";
+      $("doorStatus").textContent="Este cofre estaba vacío y ya usaste todas tus llaves. No pasa nada: los cofres probados quedan marcados entre partidas, así que nunca vas a volver a abrir uno vacío. Gana otra llave jugando de nuevo las misiones. Los que insisten, llegan.";
       $("doorActions").innerHTML='<button id="newKeyBtn" class="primary">🔁 Ganar otra llave</button>';
       $("newKeyBtn").addEventListener("click",replayForKey);
     }
@@ -1952,9 +1954,9 @@ function chooseDoor(index){
 }
 function replayForKey(){
   stopAllHoles();
-  const attempts=state.door.attempts;
+  const attempts=state.door.attempts,failed=state.door.failed,exit=state.door.exitDoor;
   resetGameState();
-  state.door.attempts=attempts;
+  state.door.attempts=attempts;state.door.failed=failed;state.door.exitDoor=exit;
   state.recoveryAttempts=0;state.recoverySelectAttempts=0;state.recoveryUnlocked=false;state.recoveryHadFailure=false;
   state._r0=null;state._retrying=false;
   saveProgress();
@@ -2932,7 +2934,7 @@ function saveProgress(){
   if(!state.player.first)return;
   try{const s=state;localStorage.setItem(LS_SAVE,JSON.stringify({player:s.player,order:s.order.map(d=>d.key),results:s.results,
     totalScore:s.totalScore,totalStars:s.totalStars,totalHits:s.totalHits,totalWrong:s.totalWrong,missionIndex:s.missionIndex,
-    exp:s.exp,shelfDone:!!s.shelfDone,door:{failed:[...s.door.failed],attempts:s.door.attempts},recordId:s.recordId,at:Date.now()}))}catch(_){}
+    exp:s.exp,shelfDone:!!s.shelfDone,door:{failed:[...s.door.failed],attempts:s.door.attempts,exitDoor:s.door.exitDoor},recordId:s.recordId,at:Date.now()}))}catch(_){}
 }
 function loadProgress(){try{return JSON.parse(localStorage.getItem(LS_SAVE)||"null")}catch(_){return null}}
 function clearProgress(){try{localStorage.removeItem(LS_SAVE)}catch(_){}}
@@ -2949,7 +2951,7 @@ function renderResume(){
     state.player=q.player;state.order=q.order.map(k=>DATA.find(d=>d.key===k));state.results=q.results;
     state.totalScore=q.totalScore;state.totalStars=q.totalStars;state.totalHits=q.totalHits;state.totalWrong=q.totalWrong;
     state.missionIndex=q.missionIndex;state.exp=q.exp;state.shelfDone=!!q.shelfDone;state.recordId=q.recordId;
-    state.door={failed:new Set((q.door&&q.door.failed)||[]),exitDoor:null,keyAvailable:false,attempts:(q.door&&q.door.attempts)||0,certificateUnlocked:false};
+    state.door={failed:new Set((q.door&&q.door.failed)||[]),exitDoor:(q.door&&q.door.exitDoor!=null)?q.door.exitDoor:null,keyAvailable:false,attempts:(q.door&&q.door.attempts)||0,certificateUnlocked:false};
     showMap();
   });
   $("resumeDel").addEventListener("click",()=>{clearProgress();renderResume()});
